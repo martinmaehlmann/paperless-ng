@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tika
+  name: tika
+  namespace: paperless-ng
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tika
+  template:
+    metadata:
+      labels:
+        app: tika
+    spec:
+      containers:
+      - image: apache/tika:1.26
+        name: tika
+        ports:
+          - containerPort: 9998
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tika
+  namespace: paperless-ng
+spec:
+  selector:
+    app: tika
+  ports:
+    - protocol: TCP
+      port: 9998
+      targetPort: 9998
