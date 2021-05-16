@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "paperless-ng.fullname" . }}
+  labels:
+    {{- include "paperless-ng.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "paperless-ng.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.paperless.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "paperless-ng.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.paperless.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "paperless-ng.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.paperless.image.repository }}:{{ .Values.paperless.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.paperless.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.paperless.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: paperless-config
+            - secretRef:
+                name: paperless-secret-key
+            - secretRef:
+                name: paperless-superuser
+          volumeMounts:
+            - mountPath: /usr/src/paperless/data
+              name: data
+            - mountPath: /usr/src/paperless/media
+              name: media
+            - mountPath: /usr/src/paperless/export
+              name: export
+            - mountPath: /usr/src/paperless/consume
+              name: consume
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: paperless-data-pvc
+        - name: media
+          persistentVolumeClaim:
+            claimName: paperless-media-pvc
+        - name: export
+          persistentVolumeClaim:
+            claimName: paperless-export-pvc
+        - name: consume
+          persistentVolumeClaim:
+            claimName: paperless-consume-pvc
+     initContainers:
+        - name: init-system
+          image: jonaswinkler/paperless-ng
+          command: ['sh', '-c', 'python /usr/src/paperless/src/manage.py migrate && python /usr/src/paperless/src/manage.py createsuperuser --noinput --username "$USERNAME" --email "$EMAIL"', '|| true']
+          envFrom:
+            - configMapRef:
+                name: paperless-config
+            - secretRef:
+                name: paperless-secret-key
+            - secretRef:
+                name: paperless-superuser
+      {{- with .Values.paperless.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.paperless.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.paperless.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

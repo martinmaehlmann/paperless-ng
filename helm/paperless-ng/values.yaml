@@ -1,0 +1,238 @@
+# Paperless is an application by Daniel Quinn and contributors that indexes your scanned documents and allows you to 
+# easily search for documents and store metadata alongside your documents.
+
+# Paperless-ng is a fork of the original project, adding a new interface and many other changes under the hood. These 
+# key points should help you decide whether Paperless-ng is something you would prefer over Paperless:
+
+#     Interface: The new front end is the main interface for Paperless-ng, the old interface still exists but most 
+#     customizations (such as thumbnails for the document list) have been removed.0
+#     Encryption: Paperless-ng does not support GnuPG anymore, since storing your data on encrypted file systems (that 
+#     you optionally mount on demand) achieves about the same result.
+#     Resource usage: Paperless-ng does use a bit more resources than Paperless. Running the web server requires about 
+#     300MB of RAM or more, depending on the configuration. While adding documents, it requires about 300MB additional 
+#     RAM, depending on the document. It still runs on Raspberry Pi (many users do that), but it has been generally 
+#     geared to better use the resources of more powerful systems.
+#     API changes: If you rely on the REST API of paperless, some of its functionality has been changed.
+
+# For a detailed list of changes, have a look at the change log in the documentation, especially the section about the 
+# 0.9.0 release.
+paperless:
+  image:
+    repository: jonaswinkler/paperless-ng
+    pullPolicy: Always
+    tag: "latest"
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+        - path: /
+          backend:
+            serviceName: chart-example.local
+            servicePort: 80
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+
+
+bitnami/postgresql-ha:
+
+  image:
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: 13
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ##
+    # pullSecrets:
+    #   - myRegistryKeySecretName
+
+  ## String to partially override common.names.fullname template (will maintain the release name)
+  ##
+  # nameOverride:
+
+  ## String to fully override common.names.fullname template
+  ##
+  # fullnameOverride:
+
+  ##
+  ## Init containers parameters:
+  ## volumePermissions: Change the owner of the persist volume mountpoint to RunAsUser:fsGroup
+  ##
+  volumePermissions:
+    enabled: false
+    image:
+      registry: docker.io
+      repository: bitnami/bitnami-shell
+      tag: "10"
+      ## Specify a imagePullPolicy
+      ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+      ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+      ##
+      pullPolicy: Always
+      ## Optionally specify an array of imagePullSecrets.
+      ## Secrets must be manually created in the namespace.
+      ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+      ##
+      # pullSecrets:
+      #   - myRegistryKeySecretName
+    
+    
+    ## Pod Service Account
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+    ##
+    serviceAccount:
+      enabled: false
+      ## Name of an already existing service account. Setting this value disables the automatic service account creation.
+      # name:
+    
+    replication:
+      enabled: false
+      user: repl_user
+      password: repl_password
+      readReplicas: 1
+      ## Set synchronous commit mode: on, off, remote_apply, remote_write and local
+      ## ref: https://www.postgresql.org/docs/9.6/runtime-config-wal.html#GUC-WAL-LEVEL
+      synchronousCommit: 'off'
+      ## From the number of `readReplicas` defined above, set the number of those that will have synchronous replication
+      ## NOTE: It cannot be > readReplicas
+      numSynchronousReplicas: 0
+      ## Replication Cluster application name. Useful for defining multiple replication policies
+      ##
+      applicationName: my_application
+
+    ## PostgreSQL admin password (used when `postgresqlUsername` is not `postgres`)
+    ## ref: https://github.com/bitnami/bitnami-docker-postgresql/blob/master/README.md#creating-a-database-user-on-first-run (see note!)
+    # postgresqlPostgresPassword:
+
+    ## PostgreSQL user (has superuser privileges if username is `postgres`)
+    ## ref: https://github.com/bitnami/bitnami-docker-postgresql/blob/master/README.md#setting-the-root-password-on-first-run
+    ##
+    postgresqlUsername: postgres
+
+    ## PostgreSQL password
+    ## ref: https://github.com/bitnami/bitnami-docker-postgresql/blob/master/README.md#setting-the-root-password-on-first-run
+    ##
+    postgresqlPassword:
+
+    ## PostgreSQL password using existing secret
+    ## existingSecret: secret
+    ##
+
+    ## Mount PostgreSQL secret as a file instead of passing environment variable
+    # usePasswordFile: false
+
+    ## Create a database
+    ## ref: https://github.com/bitnami/bitnami-docker-postgresql/blob/master/README.md#creating-a-database-on-first-run
+    ##
+    postgresqlDatabase:
+
+    ## An array to add extra environment variables
+    ## For example:
+    ## extraEnv:
+    ##   - name: FOO
+    ##     value: "bar"
+    ##
+    # extraEnv:
+    extraEnv: []
+
+    ## PostgreSQL data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    persistence:
+      enabled: true
+      ## A manually managed Persistent Volume and Claim
+      ## If defined, PVC must be created manually before volume will be bound
+      ## The value is evaluated as a template, so, for example, the name can depend on .Release or .Chart
+      ##
+      # existingClaim:
+
+      ## The path the volume will be mounted at, useful when using different
+      ## PostgreSQL images.
+      ##
+      mountPath: /bitnami/postgresql
+
+      ## The subdirectory of the volume to mount to, useful in dev environments
+      ## and one PV for multiple services.
+      ##
+      subPath: ''
+
+      # storageClass: "-"
+      accessModes:
+        - ReadWriteOnce
+      size: 8Gi
+      annotations: {}
+      ## selector can be used to match an existing PersistentVolume
+      ## selector:
+      ##   matchLabels:
+      ##     app: my-app
+      selector: {}
+
+    ## PostgreSQL service configuration
+    ##
+    service:
+      ## PosgresSQL service type
+      ##
+      type: ClusterIP
+      # clusterIP: None
+      port: 5432
+
+      ## Specify the nodePort value for the LoadBalancer and NodePort service types.
+      ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+      ##
+      # nodePort:
+
+      ## Provide any additional annotations which may be required. Evaluated as a template.
+      ##
+      annotations: {}
+      ## Set the LoadBalancer service type to internal only.
+      ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+      ##
+      # loadBalancerIP:
+      ## Load Balancer sources. Evaluated as a template.
+      ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+      ##
+      # loadBalancerSourceRanges:
+      # - 10.10.10.0/24
