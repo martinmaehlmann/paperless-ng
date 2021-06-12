@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{- template "paperless-ng.fullname"}}-paperless-config
+  labels:
+    app: paperless
+		{{- template "paperless-ng.labels" }}
+  namespace: {{ $.Release.Namespace }}
+data:
+	{{ .Values.paperless.config }}
+    PAPERLESS_TIKA_GOTENBERG_ENDPOINT: 'https://{{- template "paperless-ng.fullname"}}-gotenberg:9998'
+    PAPERLESS_TIKA_ENDPOINT: 'https://{{- template "paperless-ng.fullname"}}-tika:9998'
+
+  {{- template  "paperless-ng.fullname"}}-tika:9998

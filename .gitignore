@@ -86,3 +86,7 @@ scripts/nuke
 # this is where the compiled frontend is moved to.
 /src/documents/static/frontend/
 /docs/.vscode/settings.json
+
+# helm stuff
+*.tgz
+Chart.lock

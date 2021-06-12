@@ -1,26 +1,26 @@
-# Paperless is an application by Daniel Quinn and contributors that indexes your scanned documents and allows you to 
+# Paperless is an application by Daniel Quinn and contributors that indexes your scanned documents and allows you to
 # easily search for documents and store metadata alongside your documents.
 
-# Paperless-ng is a fork of the original project, adding a new interface and many other changes under the hood. These 
+# Paperless-ng is a fork of the original project, adding a new interface and many other changes under the hood. These
 # key points should help you decide whether Paperless-ng is something you would prefer over Paperless:
 
-#     Interface: The new front end is the main interface for Paperless-ng, the old interface still exists but most 
+#     Interface: The new front end is the main interface for Paperless-ng, the old interface still exists but most
 #     customizations (such as thumbnails for the document list) have been removed.0
-#     Encryption: Paperless-ng does not support GnuPG anymore, since storing your data on encrypted file systems (that 
+#     Encryption: Paperless-ng does not support GnuPG anymore, since storing your data on encrypted file systems (that
 #     you optionally mount on demand) achieves about the same result.
-#     Resource usage: Paperless-ng does use a bit more resources than Paperless. Running the web server requires about 
-#     300MB of RAM or more, depending on the configuration. While adding documents, it requires about 300MB additional 
-#     RAM, depending on the document. It still runs on Raspberry Pi (many users do that), but it has been generally 
+#     Resource usage: Paperless-ng does use a bit more resources than Paperless. Running the web server requires about
+#     300MB of RAM or more, depending on the configuration. While adding documents, it requires about 300MB additional
+#     RAM, depending on the document. It still runs on Raspberry Pi (many users do that), but it has been generally
 #     geared to better use the resources of more powerful systems.
 #     API changes: If you rely on the REST API of paperless, some of its functionality has been changed.
 
-# For a detailed list of changes, have a look at the change log in the documentation, especially the section about the 
+# For a detailed list of changes, have a look at the change log in the documentation, especially the section about the
 # 0.9.0 release.
 paperless:
   image:
     repository: jonaswinkler/paperless-ng
     pullPolicy: Always
-    tag: "latest"
+    tag: "1.4.4"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -47,6 +47,28 @@ paperless:
     #    hosts:
     #      - chart-example.local
 
+    certManager:
+      enabled: false
+
+  config:
+    PAPERLESS_REDIS: "redis://redis:6379"
+    PAPERLESS_DBHOST: "postgres"
+    PAPERLESS_TIKA_ENABLED: "1"
+    PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://gotenberg.bak:3000"
+    PAPERLESS_TIKA_ENDPOINT: "http://tika:9998"
+    PAPERLESS_OCR_LANGUAGE: "deu"
+    PAPERLESS_ALLOWED_HOSTS: "*"
+    PAPERLESS_CORS_ALLOWED_HOSTS: "http://localhost:8000"
+    PAPERLESS_OCR_MODE: "skip" # skip / skip_noarchive/ redo / force
+    PAPERLESS_OCR_CLEAN: "clean-final" # clean / clean-final / none
+    PAPERLESS_OCR_DESKEW: "true" # true / false
+    PAPERLESS_OCR_ROTATE_PAGES: "true"
+    PAPERLESS_OCR_ROTATE_PAGES_THRESHOLD: "12"
+    PAPERLESS_OCR_OUTPUT_TYPE: "pdfa" # pdf / pdfa / pdfa-1 / pdfa-2 / pdfa-3
+    PAPERLESS_OCR_PAGES: "0"
+    PAPERLESS_OCR_USER_ARGS: ""
+    PAPERLESS_TIME_ZONE: "Europe/Berlin"
+
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -65,10 +87,22 @@ paperless:
 
   affinity: {}
 
+tika:
+  image: apache/tika:1.26
+  replicas: 1
 
+gotenberg:
+  replicas: 1
+  image: thecodingmachine/gotenberg.bak
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: "0.2"
+    requests:
+      memory: 512Mi
+      cpu: "0.2"
 
-bitnami/postgresql-ha:
-
+postgresql:
   image:
     registry: docker.io
     repository: bitnami/postgresql
@@ -114,8 +148,8 @@ bitnami/postgresql-ha:
       ##
       # pullSecrets:
       #   - myRegistryKeySecretName
-    
-    
+
+
     ## Pod Service Account
     ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
     ##
@@ -123,7 +157,7 @@ bitnami/postgresql-ha:
       enabled: false
       ## Name of an already existing service account. Setting this value disables the automatic service account creation.
       # name:
-    
+
     replication:
       enabled: false
       user: repl_user
