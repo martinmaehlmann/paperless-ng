@@ -1,11 +1,33 @@
 image:
-repository: jonaswinkler/paperless-ng
-pullPolicy: Always
-tag: "1.4.4"
+  repository: jonaswinkler/paperless-ng
+  pullPolicy: Always
+  tag: "1.4.4"
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 service:
   type: ClusterIP
@@ -15,14 +37,14 @@ ingress:
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.class: nginx
-  # kubernetes.io/tls-acme: "true"
+    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
-        - path: /
-          backend:
-            serviceName: chart-example.local
-            servicePort: 80
+      - path: /
+        backend:
+          serviceName: chart-example.local
+          servicePort: 80
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -31,24 +53,58 @@ ingress:
   certManager:
     enabled: false
 
+secrets:
+  
+  # the secret key is used to encrypt the communication between the services of the helm Chart. It can either be set
+  # using an existing secret containing the value "PAPERLESS_SECRET_KEY" or can be set here. If the existingSecret
+  # and the key are set, the existing secret will take precedence over the key.
+  secretKey:
+    # existingSecret: 'foo-bar'
+    key: 'foo-bar'
+  
+  # the superuser password sets or updates the values for a superuser. It can either be set using an existing 
+  # secret containing the values "USERNAME", "EMAIL" and "DJANGO_SUPERUSER_PASSWORD" or can be set here.
+  #
+  # The default values are:
+  #   username: admin
+  #   password: random 20 char string
+  #   email: admin@localhost
+  #
+  # This user is created or updated, given the values in this chart. Therefore, the password can be changed by changing
+  # the value in this chart, applying the chart and then restarting the container.
+  #
+  # Beware though: Changing the username, will create a second admin account, but will not delete the orginal one.
+  superUserPassword:
+    # existingSecret: 'foo-bar'
+    username: admin
+    password: admin
+    email: foo@bar.com
+
 config:
-  PAPERLESS_REDIS: "redis://redis:6379"
-  PAPERLESS_DBHOST: "postgres"
-  PAPERLESS_TIKA_ENABLED: "1"
-  PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://gotenberg.bak:3000"
-  PAPERLESS_TIKA_ENDPOINT: "http://tika:9998"
-  PAPERLESS_OCR_LANGUAGE: "deu"
-  PAPERLESS_ALLOWED_HOSTS: "*"
-  PAPERLESS_CORS_ALLOWED_HOSTS: "http://localhost:8000"
-  PAPERLESS_OCR_MODE: "skip" # skip / skip_noarchive/ redo / force
-  PAPERLESS_OCR_CLEAN: "clean-final" # clean / clean-final / none
-  PAPERLESS_OCR_DESKEW: "true" # true / false
-  PAPERLESS_OCR_ROTATE_PAGES: "true"
-  PAPERLESS_OCR_ROTATE_PAGES_THRESHOLD: "12"
-  PAPERLESS_OCR_OUTPUT_TYPE: "pdfa" # pdf / pdfa / pdfa-1 / pdfa-2 / pdfa-3
-  PAPERLESS_OCR_PAGES: "0"
-  PAPERLESS_OCR_USER_ARGS: ""
-  PAPERLESS_TIME_ZONE: "Europe/Berlin"
+  paperless:
+    allowedHosts: "*"
+    corsAllowedHosts: http://localhost:8000
+    userArgs: 
+    timeZone: Europe/Berlin
+  tika:
+    enabled: 1
+    endpoint: http://tika:9998
+  redis:
+    endpoint: redis://redis:6379
+  database:
+    hostname: postgres
+  gotenberg:
+    endpoint: http://gotenberg:3000
+  ocr:
+    language: deu
+    mode: skip          # skip / skip_noarchive/ redo / force
+    clean: clean-final  # clean / clean-final / none
+    deskew: true
+    rotatePages:
+      enabled: true
+      threshold: 12
+    outputType: pdfa   # pdf / pdfa / pdfa-1 / pdfa-2 / pdfa-3
+    pages: 0
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -60,7 +116,14 @@ resources: {}
   #   memory: 128Mi
   # requests:
   #   cpu: 100m
-#   memory: 128Mi
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 

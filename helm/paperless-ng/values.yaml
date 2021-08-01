@@ -54,7 +54,7 @@ paperless:
     PAPERLESS_REDIS: "redis://redis:6379"
     PAPERLESS_DBHOST: "postgres"
     PAPERLESS_TIKA_ENABLED: "1"
-    PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://gotenberg.bak:3000"
+    PAPERLESS_TIKA_GOTENBERG_ENDPOINT: "http://gotenberg:3000"
     PAPERLESS_TIKA_ENDPOINT: "http://tika:9998"
     PAPERLESS_OCR_LANGUAGE: "deu"
     PAPERLESS_ALLOWED_HOSTS: "*"
@@ -93,7 +93,7 @@ tika:
 
 gotenberg:
   replicas: 1
-  image: thecodingmachine/gotenberg.bak
+  image: thecodingmachine/gotenberg
   resources:
     limits:
       memory: 512Mi

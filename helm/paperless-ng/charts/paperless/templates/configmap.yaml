@@ -2,14 +2,24 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{- template "paperless-ng.fullname"}}-paperless-config
+  name: {{ include "paperless.fullname" . }}
   labels:
-    app: paperless
-		{{- template "paperless-ng.labels" }}
-  namespace: {{ $.Release.Namespace }}
+    {{- include "paperless.labels" . | nindent 4 }}
 data:
-	{{ .Values.paperless.config }}
-    PAPERLESS_TIKA_GOTENBERG_ENDPOINT: 'https://{{- template "paperless-ng.fullname"}}-gotenberg:9998'
-    PAPERLESS_TIKA_ENDPOINT: 'https://{{- template "paperless-ng.fullname"}}-tika:9998'
-
-  {{- template  "paperless-ng.fullname"}}-tika:9998
+  PAPERLESS_TIME_ZONE: {{ .Values.config.paperless.timeZone | default "Europe/Berlin" | quote }}
+  PAPERLESS_OCR_USER_ARGS: {{ .Values.config.paperless.userArgs | default "" | quote }}
+  PAPERLESS_ALLOWED_HOSTS: {{ .Values.config.paperless.allowedHosts | default "*" | quote }}
+  PAPERLESS_CORS_ALLOWED_HOSTS: {{ .Values.config.paperless.corsAllowedHosts | default "http://localhost:8000" | quote }}
+  PAPERLESS_TIKA_ENABLED: {{ .Values.config.tika.enabled | default 1 | quote }}
+  PAPERLESS_TIKA_GOTENBERG_ENDPOINT: {{ .Values.config.gotenberg.endpoint | default "http://gotenberg:3000" | quote }}
+  PAPERLESS_TIKA_ENDPOINT: {{ .Values.config.tika.endpoint | default "http://tika:9998" | quote }}
+  PAPERLESS_REDIS: {{ .Values.config.redis.endpoint | default "redis://redis:6379" | quote }}
+  PAPERLESS_DBHOST: {{ .Values.config.database.hostname | default "postgres" | quote }}
+  PAPERLESS_OCR_LANGUAGE: {{ .Values.config.ocr.language | default "deu" | quote }}
+  PAPERLESS_OCR_MODE: {{ .Values.config.ocr.mode | default "skip" | quote }}
+  PAPERLESS_OCR_CLEAN: {{ .Values.config.ocr.clean | default "clean-final" | quote }}
+  PAPERLESS_OCR_DESKEW: {{ .Values.config.ocr.deskew | default "true" | quote }}
+  PAPERLESS_OCR_ROTATE_PAGES: {{ .Values.config.ocr.rotatePages.enabled | default "true" | quote }}
+  PAPERLESS_OCR_ROTATE_PAGES_THRESHOLD: {{ .Values.config.ocr.rotatePages.threshold | default 12 | quote }}
+  PAPERLESS_OCR_OUTPUT_TYPE: {{ .Values.config.ocr.outputType | default "pdfa" | quote }}
+  PAPERLESS_OCR_PAGES: {{ .Values.config.ocr.pages | default 0 | quote }}
