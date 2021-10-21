@@ -15,6 +15,7 @@ data:
   PAPERLESS_TIKA_ENDPOINT: {{ .Values.config.tika.endpoint | default "http://tika:9998" | quote }}
   PAPERLESS_REDIS: {{ .Values.config.redis.endpoint | default "redis://redis:6379" | quote }}
   PAPERLESS_DBHOST: {{ .Values.config.database.hostname | default "postgres" | quote }}
+  PAPERLESS_DBUSER: {{ .Values.config.database.hostname | default "paperless" | quote }}
   PAPERLESS_OCR_LANGUAGE: {{ .Values.config.ocr.language | default "deu" | quote }}
   PAPERLESS_OCR_MODE: {{ .Values.config.ocr.mode | default "skip" | quote }}
   PAPERLESS_OCR_CLEAN: {{ .Values.config.ocr.clean | default "clean-final" | quote }}

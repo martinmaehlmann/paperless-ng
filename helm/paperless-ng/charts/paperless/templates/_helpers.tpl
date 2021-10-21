@@ -76,3 +76,45 @@ Create the name of the secret key secret
 {{- $name := printf "%s-%s" (include "paperless.fullname" .) "super-user" }}
 {{- default $name | trunc 63 }}
 {{- end }}
+
+# {{/*
+# Create the name of the database password secret
+*/}}
+{{- define "paperless.database.password" -}}
+{{- $name := printf "%s-%s" (include "paperless.fullname" .) "database-password" }}
+{{- default $name | trunc 63 }}
+{{- end }}
+
+# {{/*
+# Create the name of the export pvc
+*/}}
+{{- define "paperless.export.pvc" -}}
+{{- $name := printf "%s-%s" (include "paperless.fullname" .) "export-pvc" }}
+{{- default $name | trunc 63 }}
+{{- end }}
+
+# {{/*
+# Create the name of the data pvs
+*/}}
+{{- define "paperless.data.pvc" -}}
+{{- $name := printf "%s-%s" (include "paperless.fullname" .) "data-pvc" }}
+{{- default $name | trunc 63 }}
+{{- end }}
+
+
+# {{/*
+# Create the name of the media pvs
+*/}}
+{{- define "paperless.media.pvc" -}}
+{{- $name := printf "%s-%s" (include "paperless.fullname" .) "media-pvc" }}
+{{- default $name | trunc 63 }}
+{{- end }}
+
+
+# {{/*
+# Create the name of the consume pvs
+*/}}
+{{- define "paperless.consume.pvc" -}}
+{{- $name := printf "%s-%s" (include "paperless.fullname" .) "consume-pvc" }}
+{{- default $name | trunc 63 }}
+{{- end }}

@@ -1,0 +1,15 @@
+{{- if .Values.persistence.enabled -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "paperless.data.pvc" . }}
+  labels:
+    {{- include "paperless.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.persistence.storageClassName }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistence.dataVolume.size }}
+  {{- end }}
