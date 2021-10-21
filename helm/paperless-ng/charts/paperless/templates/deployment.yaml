@@ -92,3 +92,15 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "paperless.consume.pvc" . }}
       {{- end }}
+      initContainers:
+      - name: init-system
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ['sh', '-c', 'python /usr/src/paperless/src/manage.py migrate && python /usr/src/paperless/src/manage.py createsuperuser --noinput --username "$USERNAME" --email "$EMAIL" || true']
+        envFrom:
+         - configMapRef:
+              name: {{ include "paperless.fullname" . }}
+         - secretRef:
+              name: {{ include "paperless.secretKeyName" . }}
+         - secretRef:
+              name: {{ include "paperless.superUserName" . }}
