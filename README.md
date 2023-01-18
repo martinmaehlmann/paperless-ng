@@ -1,3 +1,7 @@
+# This project is a fork of [paperless-ng](https://github.com/jonaswinkler/paperless-ng) by [jonaswinkler](https://github.com/jonaswinkler/paperless-ng/commits?author=jonaswinkler)
+
+I am migrating it to work with kubernetes in the branch kubernetes-support.
+
 [![ci](https://github.com/jonaswinkler/paperless-ng/workflows/ci/badge.svg)](https://github.com/jonaswinkler/paperless-ng/actions)
 ![Ansible Role](https://github.com/jonaswinkler/paperless-ng/workflows/Ansible%20Role/badge.svg)
 [![Crowdin](https://badges.crowdin.net/paperless-ng/localized.svg)](https://crowdin.com/project/paperless-ng)
